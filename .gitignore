@@ -52,3 +52,6 @@ crashlytics-build.properties
 # Test results / captures produced by local test runs
 TestResults/
 Captures/
+
+# Separate nested git repository (has its own remote/history)
+/DungeonBorn-1v1/
