@@ -1,0 +1,10 @@
+apiRules:
+  - exclude:
+    uidRegex: pxr*
+    type: Namespace
+  - exclude:
+    uidRegex: pxr\.*
+    type: Namespace
+  - exclude:
+    uidRegex: USD\.NET*
+    type: Namespace

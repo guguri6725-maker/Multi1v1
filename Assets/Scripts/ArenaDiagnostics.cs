@@ -83,14 +83,14 @@ namespace FighterArena
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - 1.0;
             r.ReceiveHit(b, 34, false);
-            Check(report, "late front guard mitigates 80 percent", Mathf.Abs(r.Health.Value - 243.2f) < .01f);
+            Check(report, "late front guard takes one damage", Mathf.Abs(r.Health.Value - (r.maxHealth - 1)) < .01f);
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - 1.0;
             r.ReceiveHit(b, 65, true);
             Check(report, "heavy breaks ordinary guard", r.Health.Value == 185 && r.Action.Value == CombatAction.Stunned);
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - .1; r.ReceiveHit(b, 65, true);
-            Check(report, "heavy can be perfectly parried", r.Health.Value == 250 && b.Action.Value == CombatAction.Stunned);
+            Check(report, "heavy can be parried without attacker stun", r.Health.Value == r.maxHealth && b.Action.Value != CombatAction.Stunned);
             Stage(s);
             r.transform.rotation = Quaternion.identity;
             r.ServerCommand(2); r.ReceiveHit(b, 34, false);
@@ -118,7 +118,7 @@ namespace FighterArena
             Check(report, "lethal hit ends first-to-three once", m.BlueWins.Value == 3 && m.Phase.Value == 4 && !m.Live.Value);
             m.RematchRpc();
             yield return new WaitForSeconds(.1f);
-            Check(report, "rematch clears score and restores health", m.BlueWins.Value == 0 && m.RedWins.Value == 0 && r.Health.Value == 250 && m.Phase.Value == 1);
+            Check(report, "rematch clears score, restores health and starts immediately", m.BlueWins.Value == 0 && m.RedWins.Value == 0 && r.Health.Value == 250 && m.Phase.Value == 2 && m.Live.Value);
             LastReport = JsonUtility.ToJson(report, true);
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "../TestResults"));
             File.WriteAllText(Path.Combine(Application.dataPath, "../TestResults/combat-report.json"), LastReport);

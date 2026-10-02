@@ -16,6 +16,7 @@ namespace FighterArena
         public const float Reach = 2.7f;
         public static bool IsAttack(CombatAction a) => a >= CombatAction.LeftSlash && a <= CombatAction.Heavy || a == CombatAction.Riposte;
         public static bool IsLight(CombatAction a) => a >= CombatAction.LeftSlash && a <= CombatAction.Thrust;
+        public static bool PiercesGuard(CombatAction a) => a == CombatAction.Heavy || a == CombatAction.Riposte;
         public static float Windup(CombatAction a) => a == CombatAction.Thrust ? .46f : .4f;
         public static float HitTime(CombatAction a) => IsLight(a) ? Windup(a) + .06f : Duration(a) * .42f;
         public static float Duration(CombatAction a) => a == CombatAction.Heavy ? .85f : a == CombatAction.Riposte ? .8f : a == CombatAction.Thrust ? .96f : .9f;
@@ -25,9 +26,9 @@ namespace FighterArena
             bool ready = guarding && facing && guardAge >= GuardRaiseTime;
             parried = ready && guardAge <= GuardRaiseTime + ParryWindow;
             if (parried) return 0;
-            // 차징 강공격은 패링에 성공한 경우만 방어할 수 있습니다.
+            // 차징 강공격과 패링 반격은 일반 방어를 관통하며 패링만 가능합니다.
             if (heavy) return damage;
-            return ready ? damage * .2f : damage;
+            return ready ? Mathf.Min(1f, damage) : damage;
         }
         public static CombatAction Combo(int index) => (CombatAction)((int)CombatAction.LeftSlash + index % 3);
         public static bool Finite(float f) => !float.IsNaN(f) && !float.IsInfinity(f);

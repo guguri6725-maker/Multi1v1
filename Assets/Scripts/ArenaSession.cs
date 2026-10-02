@@ -262,14 +262,33 @@ namespace FighterArena
                 default: return "";
             }
         }
+        ArenaFighter cameraFighter;
+        double cameraFeedbackAt = -100;
+        float guardBreakStarted = -100;
         void LateUpdate()
         {
             if (!match.IsSpawned) return;
             var f = match.blue.Local ? match.blue : match.red.Local ? match.red : null;
             if (f == null) return;
+            if (cameraFighter != f) { cameraFighter = f; cameraFeedbackAt = f.FeedbackAt.Value; guardBreakStarted = -100; }
+            if (cameraFeedbackAt != f.FeedbackAt.Value)
+            {
+                cameraFeedbackAt = f.FeedbackAt.Value;
+                // 도착 시점부터 짧게 재생해 손님에게도 온전한 충격이 보입니다.
+                if (f.Feedback.Value == 5) guardBreakStarted = Time.unscaledTime;
+            }
             Quaternion look = Quaternion.Euler(f.Pitch,f.ViewYaw,0);
             viewCamera.transform.position = f.transform.position + Vector3.up * 1.7f + Quaternion.Euler(0,f.ViewYaw,0) * Vector3.forward * .07f;
             viewCamera.transform.rotation = look;
+            float age = Time.unscaledTime - guardBreakStarted;
+            if (age >= 0 && age < .24f && match.Live.Value && f.Health.Value > 0)
+            {
+                // 카메라에만 감쇠 흔들림을 더하므로 조준 방향과 공격 판정은 변하지 않습니다.
+                float fade = Mathf.Pow(1 - age / .24f, 2);
+                float wave = Mathf.Sin(age * 95);
+                viewCamera.transform.position += look * new Vector3(wave * .018f, Mathf.Sin(age * 120) * .012f, 0) * fade;
+                viewCamera.transform.rotation = look * Quaternion.Euler(-1.4f * fade, wave * .6f * fade, wave * 1.1f * fade);
+            }
         }
         void OnDestroy()
         {

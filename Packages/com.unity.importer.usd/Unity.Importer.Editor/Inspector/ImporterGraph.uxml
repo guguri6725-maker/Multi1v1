@@ -1,0 +1,10 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <ui:Foldout text="Import Settings" name="ImportSettingsContainer" />
+    <ui:Foldout text="Graph Information" name="GraphAssetData">
+        <ui:ListView binding-path="m_Nodes" header-title="Nodes" show-bound-collection-size="false" show-foldout-header="true" focusable="false" virtualization-method="FixedHeight" fixed-item-height="18" selection-type="None" />
+        <ui:ListView binding-path="m_Edges" header-title="Edges" show-bound-collection-size="false" show-foldout-header="true" focusable="false" virtualization-method="FixedHeight" fixed-item-height="18" selection-type="None" />
+        <ui:ListView binding-path="m_SettingEdges" header-title="Setting Edges" show-bound-collection-size="false" show-foldout-header="true" focusable="false" virtualization-method="FixedHeight" fixed-item-height="18" selection-type="None" />
+        <ui:ListView binding-path="m_ResultEdges" header-title="Result Edges" show-bound-collection-size="false" show-foldout-header="true" focusable="false" virtualization-method="FixedHeight" fixed-item-height="18" selection-type="None" />
+        <ui:ListView binding-path="m_ImportConstants" header-title="Import Constants" show-bound-collection-size="false" show-foldout-header="true" focusable="false" virtualization-method="FixedHeight" fixed-item-height="18" selection-type="None" />
+    </ui:Foldout>
+</ui:UXML>

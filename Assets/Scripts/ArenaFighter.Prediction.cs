@@ -63,6 +63,8 @@ namespace FighterArena
         int predictedCombo;
         float lastPredictedInput;
         public int PendingMovementInputs => unconfirmedSteps.Count;
+        // 점프 속도를 대쉬로 오인하지 않도록 효과에 실제/예측 대쉬 상태만 공개합니다.
+        public bool VisualDashActive => IsServer ? dashRemaining > 0 : Local ? predictionReady && predictedMotion.dashRemaining > 0 : Motion.Value.dashRemaining > 0;
         public float LastCorrectionDistance { get; private set; }
         public string PredictionTrace => "render=" + transform.position + " predicted=" + predictedMotion.position + " server=" + Motion.Value.position
             + " ack=" + Motion.Value.moveSequence + " command=" + Motion.Value.commandSequence + " remaining=" + predictedMotion.dashRemaining;

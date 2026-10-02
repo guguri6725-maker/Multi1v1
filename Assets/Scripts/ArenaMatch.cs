@@ -63,8 +63,10 @@ namespace FighterArena
             if (!IsServer) return;
             Live.Value = false;
             blue.ResetFighter(); red.ResetFighter();
-            Phase.Value = 1;
-            Deadline.Value = NetworkManager.ServerTime.Time + 3;
+            // 시작 카운트다운 없이 초기화 직후 이동과 전투 입력을 허용합니다.
+            Deadline.Value = NetworkManager.ServerTime.Time;
+            Phase.Value = 2;
+            Live.Value = true;
         }
         // 같은 폭발의 피해를 모두 적용한 뒤 승패를 정해 처리 순서에 따른 이득을 막습니다.
         public void ResolveExplosionDeaths()

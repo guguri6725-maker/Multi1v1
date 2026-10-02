@@ -1,0 +1,34 @@
+{
+    "name": "Unity.Importer.USD",
+    "rootNamespace": "",
+    "references": [
+        "Unity.USD.Core",
+        "Unity.Importer",
+        "Unity.Mathematics",
+        "Unity.Burst",
+        "Unity.Collections",
+        "Unity.DemoTeam.Hair.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor",
+        "LinuxStandalone64",
+        "macOSStandalone",
+        "WindowsStandalone64"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "USD.NET.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.demoteam.hair",
+            "expression": "0",
+            "define": "HAIR_0_OR_HIGHER"
+        }
+    ],
+    "noEngineReferences": false
+}

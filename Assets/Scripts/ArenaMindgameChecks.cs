@@ -56,7 +56,7 @@ namespace FighterArena
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - .3;
             r.ReceiveHit(b, 34, false);
-            Check("instant guard mitigates after parry window", Mathf.Abs(r.Health.Value - 243.2f) < .01f && b.Action.Value != CombatAction.Stunned);
+            Check("guard takes one damage after parry window", Mathf.Abs(r.Health.Value - (r.maxHealth - 1)) < .01f && b.Action.Value != CombatAction.Stunned);
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - .1;
             r.ReceiveHit(b, 34, false);
@@ -72,12 +72,12 @@ namespace FighterArena
             Check("ordinary guard cannot block charged heavy", r.Health.Value == 185 && r.Action.Value == CombatAction.Stunned);
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - 1;
-            r.ReceiveHit(b, b.AttackDamage(CombatAction.Riposte), false);
-            Check("ordinary guard can block riposte", r.Health.Value == 237 && r.Action.Value == CombatAction.Guard);
+            r.ReceiveHit(b, b.AttackDamage(CombatAction.Riposte), true);
+            Check("riposte pierces ordinary guard", r.Health.Value == r.maxHealth - b.AttackDamage(CombatAction.Riposte) && r.Action.Value == CombatAction.Stunned && r.Feedback.Value == 5);
             Stage(s);
             r.ServerCommand(2); r.ActionAt.Value = r.Now - .1;
-            r.ReceiveHit(b, b.AttackDamage(CombatAction.Riposte), false);
-            Check("riposte can itself be parried", r.Health.Value == 250 && b.Action.Value == CombatAction.Stunned);
+            r.ReceiveHit(b, b.AttackDamage(CombatAction.Riposte), true);
+            Check("riposte can be parried without attacker stun", r.Health.Value == r.maxHealth && b.Action.Value != CombatAction.Stunned);
 
             Stage(s, 8);
             b.ServerCommand(12);

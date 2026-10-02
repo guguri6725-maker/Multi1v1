@@ -89,6 +89,7 @@ namespace FighterArena
         Vector3 dashDirection;
         float dashRemaining, currentDashSpeed;
         float verticalVelocity;
+        float stunDuration = .65f;
         bool jumpQueued;
         MaterialPropertyBlock flash;
         int combo, spinTick, seenEpoch = -1;
@@ -322,7 +323,7 @@ namespace FighterArena
                 dashRemaining = HeavyLungeDistance; currentDashSpeed = dashSpeed * .7f;
             }
         }
-        void SetAction(CombatAction action) { Action.Value = action; ActionAt.Value = Now; }
+        void SetAction(CombatAction action) { Action.Value = action; ActionAt.Value = Now; if (action == CombatAction.Stunned) stunDuration = .65f; }
 
         // 검증 드라이버도 실제 RPC 경로로 입력을 전달하여 접속자 권한 검사를 거칩니다.
         public void SendControl(Vector2 input, float yaw, int command = -1, float aimPitch = 0)
@@ -355,14 +356,14 @@ namespace FighterArena
                 if (!didHit && age >= .2) { didHit = true; throwables.Launch(Equipped.Value); }
                 if (age >= .55) SetAction(CombatAction.Idle);
             }
-            if (a == CombatAction.Stunned && age >= .65) SetAction(CombatAction.Idle);
+            if (a == CombatAction.Stunned && age >= stunDuration) SetAction(CombatAction.Idle);
             if (a == CombatAction.Recoil && age >= .38) SetAction(CombatAction.Idle);
             if (ArenaCombat.IsAttack(a))
             {
                 float duration = ArenaCombat.Duration(a);
                 // 준비 동작 뒤 검의 이동 경로를 먼저 검사하여 벽을 통과하기 전에 튕깁니다.
                 if (ArenaCombat.IsLight(a) && age >= ArenaCombat.Windup(a) && age <= ArenaCombat.Windup(a)+.14f+Time.fixedDeltaTime && SweepBlade(a,(float)age,out var wallPoint)) WallBounce(wallPoint);
-                if (Action.Value == a && !didHit && age >= ArenaCombat.HitTime(a)) { didHit = true; TryHit(AttackDamage(a), a == CombatAction.Heavy, a == CombatAction.Thrust ? 23 : 65); }
+                if (Action.Value == a && !didHit && age >= ArenaCombat.HitTime(a)) { didHit = true; TryHit(AttackDamage(a), ArenaCombat.PiercesGuard(a), a == CombatAction.Thrust ? 23 : 65); }
                 if (Action.Value == a && age >= duration) SetAction(CombatAction.Idle);
             }
             if (a == CombatAction.Whirlwind)
@@ -481,14 +482,21 @@ namespace FighterArena
             Vector3 toward = attacker.transform.position - transform.position;
             bool facing = Vector3.Angle(transform.forward, toward) <= ArenaCombat.GuardArc;
             float dealt = ArenaCombat.DamageAfterGuard(damage, Action.Value == CombatAction.Guard, facing, (float)(Now - ActionAt.Value), heavy, out bool parried);
+            bool guardBroken = heavy && facing && Action.Value == CombatAction.Guard && !parried;
             HitSerial.Value++;
             FeedbackAt.Value = Now;
-            Feedback.Value = parried ? 3 : dealt < damage ? 2 : 1;
+            // 5번 피드백은 방어 관통 전용이며 양쪽 클라이언트에 함께 전달됩니다.
+            Feedback.Value = parried ? 3 : guardBroken ? 5 : dealt < damage ? 2 : 1;
             if (parried)
             {
-                attacker.SetAction(CombatAction.Stunned);
-                attacker.dashUntil = 0;
-                attacker.dashRemaining = 0;
+                // 일반 공격만 패링 경직 0.8초. 강공격/패링 반격은 피해만 막습니다.
+                if (!heavy)
+                {
+                    attacker.SetAction(CombatAction.Stunned);
+                    attacker.stunDuration = .8f;
+                    attacker.dashUntil = 0;
+                    attacker.dashRemaining = 0;
+                }
                 RiposteUntil.Value = Now + 1.5;
                 ParryAt.Value = Now;
                 heldGuard = false;
@@ -600,7 +608,7 @@ namespace FighterArena
         {
             float age = (float)(Now-FeedbackAt.Value);
             float pulse = age >= 0 && age < .3f ? Mathf.Sin(Mathf.Clamp01(age/.3f)*Mathf.PI) : 0;
-            bool hurt = Feedback.Value == 1 || Feedback.Value == 4;
+            bool hurt = Feedback.Value == 1 || Feedback.Value == 4 || Feedback.Value == 5;
             if (flash == null) flash = new MaterialPropertyBlock();
             foreach (var part in links.anatomy)
             {
